@@ -1,8 +1,8 @@
-TARGET = 
+TARGET = compresor
 
-SRC = 
+SRC = main.c huffman.c
 
-OBJ =
+OBJ = $(SRC:.c=.o)
 
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11

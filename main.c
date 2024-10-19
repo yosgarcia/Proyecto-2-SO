@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "huffman.h"
 
 int arreglo_frecuencias [256]; 
 
@@ -11,6 +11,7 @@ void mostrarByteEnBinario(unsigned char byte){
         printf("%d", (byte >> i) & 1);
     }
 }
+
 int main(){
     const char* nombre_archivo = "archivoprueba.txt";
     FILE *archivo = fopen(nombre_archivo, "rb");
@@ -41,19 +42,26 @@ int main(){
 
     // Mostrar los bytes leídos (en formato hexadecimal)
     for (long i = 0; i < tamanoArchivo; i++) {
-        mostrarByteEnBinario(buffer[i]);
-        printf(" ");
+        //mostrarByteEnBinario(buffer[i]);
+        //printf(" ");
         arreglo_frecuencias[buffer[i]]++;
     }
-    printf("\n");
+    
+    //printf("\n");
 
     //imprimir el arreglo frecuencias
-    for (int i =0; i<255;i++){
+    /*
+    for (int i =0; i<256;i++){
         printf("Arreglo[%d] = %d \n",i,arreglo_frecuencias[i]);
     }
+    */
     // Liberar la memoria y cerrar el archivo
     free(buffer);
     fclose(archivo);
+
+    NodoHuff* raiz = crear_arbol_Huffman(arreglo_frecuencias);
+
+    
 
     return 0;
 
