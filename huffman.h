@@ -1,6 +1,10 @@
 
 #ifndef huffman_h
 #define huffman_h
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
 
 typedef struct nodo_huffman{
     unsigned char simbolo;  // Símbolo (byte) (Si no es hoja, no tiene simbolo)
@@ -17,7 +21,9 @@ typedef struct MinHeap {
 } MinHeap;
 
 
-NodoHuff* crear_nodo_Huffman(unsigned char simbolo,int frecuencia);
+
+NodoHuff* crear_nodo_huffman(unsigned char simbolo,int frecuencia);
+int es_hoja(NodoHuff* nodo);
 
 NodoHuff* unificar_nodos_huffman(NodoHuff* nodo_1, NodoHuff* nodo_2);
 
@@ -33,5 +39,18 @@ void imprimir_heap(MinHeap* heap);
 
 NodoHuff* extraer_minimo(MinHeap* heap);
 
+void imprimir_arbol_huffman(NodoHuff* raiz, int profundidad);
+
+char** generar_tabla_codigos(NodoHuff* Arbol);
+
+void generar_codigos(NodoHuff* raiz,char** tabla_codigo, char* camino_actual);
+
+void imprimir_tabla(char** tabla_codigo);
+
+void comprimir_archivo(NodoHuff* Arbol, const char* nombre_input, char* nombre_output);
+
+void escribir_bit(FILE *archivo_output, int bit, int *bitBuffer, int *contador_bits);
+
+void escribir_tabla(int bits_sobrantes, char** tabla_codigos);
 #endif
 
