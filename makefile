@@ -2,9 +2,10 @@
 TARGET_COMPRESSOR = compresor
 TARGET_DECOMPRESSOR = descompresor
 ARCHIVO_TABLA = tabla.txt
+ARCHIVO_COMPRIMIDO = archivo_comprimido
 
 # Fuentes comunes
-SRC = huffman.c
+SRC = huffman.c configuracion.c
 
 # Fuentes específicas para el compresor y el descompresor
 SRC_COMPRESSOR = main.c $(SRC)
@@ -45,6 +46,6 @@ $(TARGET_DECOMPRESSOR): $(OBJ_DECOMPRESSOR)
 
 # Regla para limpiar archivos generados
 clean:
-	rm -f $(TARGET_COMPRESSOR) $(TARGET_DECOMPRESSOR) $(OBJ_COMPRESSOR) $(OBJ_DECOMPRESSOR) $(ARCHIVO_TABLA)
+	rm -f $(ARCHIVO_COMPRIMIDO) $(TARGET_COMPRESSOR) $(TARGET_DECOMPRESSOR) $(OBJ_COMPRESSOR) $(OBJ_DECOMPRESSOR) $(ARCHIVO_TABLA)
 
 .PHONY: all clean compress decompress

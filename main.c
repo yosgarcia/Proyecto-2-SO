@@ -1,95 +1,114 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <arpa/inet.h>
 #include "huffman.h"
+#include "configuracion.h"
+#include <sys/socket.h>
 
+
+#define PORT 12345
+#define lu unsigned long
+
+
+Config* config;
 int arreglo_frecuencias [256]; 
+int respuestas_recibidas;
 
+void enviar_arreglo_bytes_a_server(const char *ip, unsigned char *message, size_t message_size) {
+    int sock;
+    struct sockaddr_in serv_addr;
+    int arreglo_recibido[256] = {0};
 
-void mostrarByteEnBinario(unsigned char byte){
-    for (int i = 7; i >= 0; i--){
-        printf("%d", (byte >> i) & 1);
+    // Crear el socket
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("Socket creation error");
+        return;
     }
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT);
+
+    // Convertir la dirección IPv4 y la dirección del servidor
+    
+    if (inet_pton(AF_INET, ip, &serv_addr.sin_addr) <= 0) {
+        perror("Invalid address / Address not supported");
+        close(sock);
+        return;
+    }
+    
+    // Conectar al servidor
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        perror("Connection failed");
+        close(sock);
+        return;
+    }
+
+    // Enviar el mensaje
+    send(sock, message, message_size, 0);
+    
+    // Recibir el arreglo de frecuencias
+    recv(sock, arreglo_recibido, sizeof(arreglo_recibido), 0);
+
+    // Sumarlo a las frecuencias
+    for (int i = 0; i < 256; i++) {
+        arreglo_frecuencias[i]+=arreglo_recibido[i];
+        if (arreglo_recibido[i] > 0) {
+            printf("\nByte %c: %d\n", i, arreglo_recibido[i]);
+        }
+    }
+    free(message);
+    //Crear el arbol huffman y enviar de nuevo a los servidores
+    
+    close(sock);
+    
 }
-void imprimir_bytes_archivo(FILE* archivo){
+
+int main() {
+    config = leer_configuracion("configuracion.txt");
+    respuestas_recibidas = 0;
+    lu num_servidores = config->num_servidores;
+
+    FILE *archivo = fopen(config->archivo_a_comprimir, "rb");
+    if(archivo == NULL){ printf("No se puedo abrir el archivo %s\n",config->archivo_a_comprimir); return 1;}
+
     fseek(archivo, 0, SEEK_END);
-    unsigned long tamanoArchivo = ftell(archivo);
+    lu cant_bytes_archivo = ftell(archivo);
     rewind(archivo);
+    fseek(archivo, 0, SEEK_SET); // Volver al inicio del archivo
 
-    unsigned char *buffer = (unsigned char*) malloc(sizeof(unsigned char) * tamanoArchivo);
-    if (buffer == NULL) {
-        printf("No se pudo asignar memoria para leer el archivo\n");
-        fclose(archivo);
-        return;
-    }
+    lu bytes_por_servidor = cant_bytes_archivo/num_servidores;
+    lu residuo = cant_bytes_archivo%num_servidores;
 
-    size_t bytesLeidos = fread(buffer, sizeof(unsigned char), tamanoArchivo, archivo);
-    if (bytesLeidos != tamanoArchivo) {
-        printf("Error al leer el archivo\n");
-        free(buffer);
-        fclose(archivo);
-        return;
+    if  (num_servidores>cant_bytes_archivo){
+        bytes_por_servidor = 1;
+        num_servidores = cant_bytes_archivo;
     }
+    unsigned char juntado [100000];
 
-    // Mostrar los bytes leídos (en formato hexadecimal)
-    for (unsigned long i = 0; i < tamanoArchivo; i++) {
-        mostrarByteEnBinario(buffer[i]);
-        printf(" ");
+    
+    for (lu i = 0; i < num_servidores; i++) {
+        long tamanno_bloque = bytes_por_servidor;
+        //se van a leer menos bytes, estoy en el final
+        if (i==num_servidores-1 && residuo>0){
+            tamanno_bloque += residuo;
+        }
+        //num servidores = 8
+        //residuo = 2
+        unsigned char *buffer = calloc(tamanno_bloque,sizeof (unsigned char));
+        size_t bytes_read = fread(buffer, 1, tamanno_bloque, archivo);
+
+        //int inicio = i*bytes_por_servidor;
+        //for (int x =0;x<tamanno_bloque;x++){
+        //    juntado[inicio+x] = buffer[x];
+        printf("ip meant: %s\n",config->ips[i]);
+        printf("mandando: %s\n",buffer);
+        //}
+        enviar_arreglo_bytes_a_server(config->ips[i], buffer, bytes_read);
     }
-    printf("\n");
-}
-//archivoprueba.txt
-int main(){
-    const char* nombre_archivo = "archivoprueba.txt";
-    FILE *archivo = fopen(nombre_archivo, "rb");
-    /*
-    const char* nombre_archivo = "comprimido";
-    FILE *archivo = fopen(nombre_archivo, "rb");
-    imprimir_bytes_archivo(archivo);
+    //printf("juntado: %s\n",juntado);
+
     return 0;
-    */
-    if(archivo == NULL){
-        printf("No se puedo abrir el archivo %s\n", nombre_archivo);
-        return 1;
-    }
-
-    fseek(archivo, 0, SEEK_END);
-    unsigned long tamanoArchivo = ftell(archivo);
-    rewind(archivo);
-
-    unsigned char *buffer = (unsigned char*) malloc(sizeof(unsigned char) * tamanoArchivo);
-    if (buffer == NULL) {
-        printf("No se pudo asignar memoria para leer el archivo\n");
-        fclose(archivo);
-        return 1;
-    }
-    size_t bytesLeidos = fread(buffer, sizeof(unsigned char), tamanoArchivo, archivo);
-    if (bytesLeidos != tamanoArchivo) {
-        printf("Error al leer el archivo\n");
-        free(buffer);
-        fclose(archivo);
-        return 1;
-    }
-    // Mostrar los bytes leídos (en formato hexadecimal)
-    for (unsigned long i = 0; i < tamanoArchivo; i++) {
-        //mostrarByteEnBinario(buffer[i]);
-        //printf(" ");
-        arreglo_frecuencias[buffer[i]] ++;
-        
-    }
-    
-    //imprimir el arreglo frecuencias
-    for (int i =0; i<256;i++){
-        //printf("Arreglo[%d] = %d \n",i,arreglo_frecuencias[i]);
-    }
-    // Liberar la memoria y cerrar el archivo
-    
-    free(buffer);
-    fclose(archivo);
-
-    NodoHuff* raiz = crear_arbol_Huffman(arreglo_frecuencias);
-    
-    imprimir_arbol_huffman(raiz,0);
-    comprimir_archivo(raiz,nombre_archivo,"comprimido");
-    return 0;    
 }

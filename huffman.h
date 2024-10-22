@@ -47,10 +47,10 @@ void generar_codigos(NodoHuff* raiz,char** tabla_codigo, char* camino_actual);
 
 void imprimir_tabla(char** tabla_codigo);
 
-void comprimir_archivo(NodoHuff* Arbol, const char* nombre_input, char* nombre_output);
+void comprimir_archivo(NodoHuff* Arbol, const char* nombre_input, char* nombre_output, char* archivo_tabla);
 
 void escribir_bit(FILE *archivo_output, int bit, int *bitBuffer, int *contador_bits);
 
-void escribir_tabla(int bits_sobrantes, char** tabla_codigos);
+void escribir_tabla(int bits_sobrantes, char** tabla_codigos, char* nombre_archivo_tabla);
 #endif
 

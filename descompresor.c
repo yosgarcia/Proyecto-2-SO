@@ -1,14 +1,19 @@
-#include "descompresor.h"
-#include "huffman.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "descompresor.h"
+#include "huffman.h"
+#include "configuracion.h"
+
+
 
 #define DERECHA '1'
 #define IZQUIEDA '0'
 #define STRING_ARCHIVO_TABLA "tabla.txt"
-#define STRING_ARCHIVO_COMPRIDO "comprimido"
+#define STRING_ARCHIVO_COMPRIDO "archivo_comprimido"
+
+Config* config;
 
 void agregar_nodo_arbol(NodoHuff* raiz, unsigned char simbolo, char* codigo, int pos_codigo ){
     int tamanno_codigo = strlen(codigo);
@@ -135,8 +140,6 @@ void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla)
     
     NodoHuff* raiz = generar_arbol_desde_tabla(tabla_codigos);
     NodoHuff* nodo_act = raiz;
-    imprimir_arbol_huffman(raiz,0);
-    //imprimir_tabla(tabla_codigos);
 
     int byte;  // Variable para almacenar el byte leído
     int byte2;
@@ -159,7 +162,7 @@ void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla)
             if (byte & (1 << i)) {
                 // Si el bit es 1, derecha
                 nodo_act = nodo_act-> derecha;
-                printf("Derecha ");
+                //printf("Derecha ");
                 if (es_hoja(nodo_act)){
                     //printf("Simbolo: %c\n", nodo_act->simbolo);
                     fputc(nodo_act->simbolo,archivo_output);
@@ -168,7 +171,7 @@ void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla)
             } else {
                 // Si el bit es 0, izquierda
                 nodo_act = nodo_act-> izquierda;
-                printf("Izquierda ");
+                //printf("Izquierda ");
                 if (es_hoja(nodo_act)){
                     //printf("Simbolo: %c\n", nodo_act->simbolo);
                     fputc(nodo_act->simbolo,archivo_output);
@@ -177,7 +180,6 @@ void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla)
             }
         }
         byte = byte2;
-        printf("\n");
     }
     fclose(archivo_input);  // Cerrar el archivo
     fclose(archivo_output);
@@ -185,6 +187,7 @@ void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla)
 }
 
 int main(){
-    descomprimir(STRING_ARCHIVO_COMPRIDO,"descomprido.txt",STRING_ARCHIVO_TABLA); 
+    config = leer_configuracion("configuracion.txt");
+    descomprimir(config->archivo_comprimido,config->archivo_descomprimido,config->archivo_tabla_huff); 
     return 0;
 }

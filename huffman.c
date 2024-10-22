@@ -5,7 +5,6 @@
 
 #define MAX_BITS 8     // Definir el tamaño máximo de bits (un byte)
 #define BLOCK_SIZE 1024  // Tamaño del bloque en bytes
-#define STRING_ARCHIVO_TABLA "tabla.txt"
 
 NodoHuff* crear_nodo_huffman(unsigned char simbolo,int frecuencia){
     NodoHuff* nodo_nvo = calloc(1,sizeof(NodoHuff));
@@ -236,21 +235,18 @@ void escribir_bit(FILE *archivo_output, int bit, int *bitBuffer, int *contador_b
     }
 }
 
-void comprimir_archivo(NodoHuff* Arbol, const char* nombre_input, char* nombre_output){
+void comprimir_archivo(NodoHuff* Arbol, const char* nombre_input, char* nombre_output,
+                       char* archivo_tabla) {
     char** tabla_codigos = generar_tabla_codigos(Arbol);
     FILE *input = fopen(nombre_input, "rb");
     if (input == NULL) {
-        perror("Error al abrir archivo de entrada");
-        return;
+        perror("Error al abrir archivo de entrada"); return;
     }
     
     FILE *output = fopen(nombre_output, "wb");
     if (output == NULL) {
-        perror("Error al abrir archivo de salida");
-        fclose(input);
-        return;
+        perror("Error al abrir archivo de salida"); fclose(input); return;
     }
-    printf("a\n");
     
     int bitBuffer = 0;  // Buffer para almacenar los bits
     int contador_bits = 0;   // Contador de bits escritos
@@ -278,13 +274,13 @@ void comprimir_archivo(NodoHuff* Arbol, const char* nombre_input, char* nombre_o
         bitBuffer <<= (MAX_BITS - contador_bits);  // Desplazar para llenar el byte
         fputc(bitBuffer, output);
     }
-    escribir_tabla(bits_sobrantes,tabla_codigos);
+    escribir_tabla(bits_sobrantes,tabla_codigos, archivo_tabla);
     fclose(output);
     fclose(input);
 }
 
-void escribir_tabla(int bits_sobrantes, char** tabla_codigos){
-    FILE* archivo_tabla = fopen(STRING_ARCHIVO_TABLA,"w");
+void escribir_tabla(int bits_sobrantes, char** tabla_codigos, char* nombre_archivo_tabla){
+    FILE* archivo_tabla = fopen(nombre_archivo_tabla,"w");
     fprintf(archivo_tabla,"%d\n",bits_sobrantes);
     for (int i=0;i<256;i++){
         if (tabla_codigos[i] == NULL){
