@@ -1,7 +1,7 @@
 cantidad_de_servidores = 3
-nombre_archivo_a_comprimir = ejemplo.txt
-nombre_archivo_comprimido = archivo_comprimido.comprimido
-nombre_archivo_descomprimido = ejemplo.txt
+nombre_archivo_a_comprimir = enunciado.pdf
+nombre_archivo_comprimido = archivo_comprimido.txt
+nombre_archivo_descomprimido = descomprimido.pdf
 nombre_archivo_tabla_huff = tabla_huff.txt
 servidores:
 127.0.0.1
