@@ -56,12 +56,7 @@ NodoHuff* generar_arbol_desde_tabla(char** tabla_codigo){
     }
     return raiz;
 }
-/*
-bits sobrantes
-codigo
-codigo
-....
-*/
+
 
 void clean_buffer(char* buffer){
     for (int i =0;i<256;i++){
@@ -118,9 +113,7 @@ int leer_bit(FILE *archivo_input, int *bitBuffer, int *contador_bits) {
 
     return bit;
 }
-/*
-    -Asegurarse de que el archivo salida no exista al ejecutarse
-*/
+
 void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla){ 
     FILE* archivo_input = fopen(nombre_entrada, "rb");
     FILE* archivo_output = fopen(nombre_salida, "wb");
@@ -130,13 +123,12 @@ void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla)
         return;
     }
     //archivos abiertos
-    int bits_sobrantes; // por ejemplo, el comprido es 1111 1111 1111, se agregaron 0000 que hay que ignorar
+    int bits_sobrantes; 
     char buffer_1[4];
     if (fgets(buffer_1,sizeof(buffer_1),archivo_tabla) != NULL) {}
     bits_sobrantes = char_to_int(buffer_1[0]);
 
     char** tabla_codigos = generar_tabla_desde_archivo(archivo_tabla);
-    //imprimir_tabla(tabla_codigos);
     
     NodoHuff* raiz = generar_arbol_desde_tabla(tabla_codigos);
     NodoHuff* nodo_act = raiz;
@@ -151,9 +143,6 @@ void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla)
         //Ultimo byte
         
         if (feof(archivo_input)){
-            //Sobraron (5) 1111 1   000  
-            //             7654 3   210
-            // 8-5 = 3 
             extras = bits_sobrantes;
         }
         // Recorrer el byte de izquierda a derecha (de 7 a 0)
@@ -162,18 +151,14 @@ void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla)
             if (byte & (1 << i)) {
                 // Si el bit es 1, derecha
                 nodo_act = nodo_act-> derecha;
-                //printf("Derecha ");
                 if (es_hoja(nodo_act)){
-                    //printf("Simbolo: %c\n", nodo_act->simbolo);
                     fputc(nodo_act->simbolo,archivo_output);
                     nodo_act = raiz;
                 }
             } else {
                 // Si el bit es 0, izquierda
                 nodo_act = nodo_act-> izquierda;
-                //printf("Izquierda ");
                 if (es_hoja(nodo_act)){
-                    //printf("Simbolo: %c\n", nodo_act->simbolo);
                     fputc(nodo_act->simbolo,archivo_output);
                     nodo_act = raiz;
                 }
@@ -189,5 +174,6 @@ void descomprimir(char* nombre_entrada, char* nombre_salida, char* nombre_tabla)
 int main(){
     config = leer_configuracion("configuracion.txt");
     descomprimir(config->archivo_comprimido,config->archivo_descomprimido,config->archivo_tabla_huff); 
+    printf("Archivo descomprimido exitosamente!!!\n");
     return 0;
 }

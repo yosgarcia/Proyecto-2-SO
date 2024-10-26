@@ -10,6 +10,7 @@ typedef struct Config{
     char* archivo_comprimido;
     char* archivo_tabla_huff;
     char** ips;
+    int* puertos;
 } Config;
 
 Config* leer_configuracion(char* nombre_archivo);

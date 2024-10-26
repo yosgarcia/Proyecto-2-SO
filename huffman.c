@@ -218,7 +218,7 @@ void imprimir_tabla(char** tabla_codigo){
     printf("Imprimiendo tabla de codigos\n");
     for(int i = 0; i < 256; i++){
         if (tabla_codigo[i] == NULL) continue;
-        printf("Simbolo: %c  Codigo: %s\n",i, tabla_codigo[i]);
+        printf("Numero: %d : Codigo: %s\n",i, tabla_codigo[i]);
     }
 }
 
